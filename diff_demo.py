@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.linalg import expm
+from matplotlib.lines import Line2D
 from sklearn.linear_model import enet_path
 from sklearn.preprocessing import StandardScaler
 import sys
@@ -8,16 +8,19 @@ sys.path.insert(1,'..')
 from elastic_desc import elastic_desc
 scaler = StandardScaler()
 
-COLS=[(0.5,0,0), (0,0.4,0), (0,0,0.6)]
+import seaborn as sns
+colors=sns.color_palette('colorblind')
+
+COLS=[colors[3],colors[2],colors[0]]
 
 rho=.69
 ALPHAS=[0,0.5,0.7,1]
 
 
 LW=1
-FS_LAB=8
+FS_LAB=9
 FS_TITLE=10
-FS_TICK=5
+FS_TICK=7
 
 Ss=np.array([[1,rho,rho],[rho,1, rho],[rho,rho,1]])
 beta_true = [0,0.1,1]
@@ -33,10 +36,10 @@ Ss_hat = 1/n*X.T.dot(X)
 
 STEP_SIZE=0.001
 
-f, axs = plt.subplots(2,len(ALPHAS), figsize=(8,4))
+fig, axs = plt.subplots(2,len(ALPHAS), figsize=(8,4))
 for a in range(len(ALPHAS)):
   alpha=ALPHAS[a]
-  beta_path_eg=elastic_desc(X,y,alpha,STEP_SIZE,alg='norm')[0]
+  beta_path_eg=elastic_desc(X,y,alpha,STEP_SIZE)[0]
   
   alpha=ALPHAS[a]
   if alpha==0:
@@ -68,8 +71,18 @@ for a in range(len(ALPHAS)):
       axs[b,a].axhline(beta_true[i],linestyle=':',color=COLS[i],zorder=1)
     #axs[b,a].set_aspect('equal')
 
-axs[0,0].set_ylabel('Elastic Gradient Descent\n$\\beta$',fontsize=FS_LAB)
+axs[0,0].set_ylabel('Elastic Gradient\nDescent\n$\\beta$',fontsize=FS_LAB)
 axs[1,0].set_ylabel('Elastic Net\n$\\beta$',fontsize=FS_LAB)
-plt.tight_layout()
+
+
+labs=['$\\beta_1=1$','$\\beta_2=0.1$',  '$\\beta_3=0$']
+lines=[]
+for c in reversed(COLS):
+  lines.append(Line2D([0],[0],color=c,lw=2))
+
+fig.legend(lines, labs, loc='lower center', ncol=3)
+
+fig.tight_layout()
+fig.subplots_adjust(bottom=0.2)
 plt.savefig('figures/diff_demo.pdf')
 
