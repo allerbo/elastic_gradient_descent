@@ -38,12 +38,71 @@ def write_log(log_name, print_str):
   with open(pref+log_name, 'a+') as f:
     f.write(print_str + '\n')
 
-def make_data_bs(seed):
+def make_data_real(seed, data_set):
   np.random.seed(seed)
-  data=pd.read_csv('bs_2000.csv',sep=',').to_numpy()
-  np.random.shuffle(data)
-  X=data[:,1:11]
-  y=data[:,0].reshape((-1,1))
+  if data_set=='diab':
+    diab=datasets.load_diabetes()
+    data=np.hstack((diab.data,diab.target.reshape((-1,1))))
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    y=data[:,-1].reshape((-1,1))
+  elif data_set=='house':
+    house=datasets.fetch_california_housing()
+    data=np.hstack((house.data,house.target.reshape((-1,1))))
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    y=data[:,-1].reshape((-1,1))
+  elif data_set=='black':
+    #https://www.maths.ed.ac.uk/~swood34
+    data=pd.read_csv('in_data/bs_2000.csv',sep=',').to_numpy()
+    np.random.shuffle(data)
+    X=data[:,1:11]
+    y=data[:,0].reshape((-1,1))
+  elif data_set=='read':
+    #https://www.kaggle.com/code/uocoeeds/building-a-regression-model-with-elastic-net
+    data=pd.read_csv('in_data/readability_features.csv',sep=',').to_numpy()
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    y=data[:,-1].reshape((-1,1))
+  elif data_set=='casp':
+    #https://archive.ics.uci.edu/ml/datasets/Physicochemical+Properties+of+Protein+Tertiary+Structure
+    data=pd.read_csv('in_data/CASP.csv',sep=',').to_numpy()
+    np.random.shuffle(data)
+    X=data[:,1:]
+    y=data[:,0].reshape((-1,1))
+  elif data_set=='wood':
+    #https://openmv.net/info/wood-fibres
+    data=pd.read_csv('in_data/wood-fibres.csv',sep=',').to_numpy()
+    np.random.shuffle(data)
+    X=data[:,1:]
+    y=data[:,0].reshape((-1,1))
+  elif data_set=='super':
+    #https://archive.ics.uci.edu/dataset/464/superconductivty+data
+    data=pd.read_csv('in_data/superconduct.csv',sep=',').to_numpy()
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    y=data[:,-1].reshape((-1,1))
+  elif data_set=='twitter':
+    #http://archive.ics.uci.edu/ml/datasets/Buzz+in+social+media
+    data=pd.read_csv('in_data/Twitter.csv',sep=',').iloc[:291624,:].to_numpy() #takes too long if using all
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    y=data[:,-1].reshape((-1,1))
+  elif data_set=='energy':
+    #http://archive.ics.uci.edu/ml/datasets/Appliances+energy+prediction
+    data=pd.read_csv('in_data/energydata_complete.csv',sep=',').iloc[:,1:].to_numpy()
+    np.random.shuffle(data)
+    X=data[:,1:]
+    y=data[:,0].reshape((-1,1))
+  elif data_set=='elect':
+    #https://archive.ics.uci.edu/dataset/513/real+time+election+results+portugal+2019
+    data=pd.read_csv('in_data/ElectionData.csv',sep=',').iloc[:,list(range(3,21))+list(range(22,28))].to_numpy()
+    np.random.shuffle(data)
+    X=data[:,:-1]
+    X=np.delete(X,[18,19,20,21,22],1) #too easy if present
+    y=data[:,-1].reshape((-1,1))
+  
+  
   X=(X-np.mean(X, 0))/np.std(X,0)
   y=y-np.mean(y)
   n_tot=data.shape[0]
@@ -60,27 +119,6 @@ def make_data_bs(seed):
   return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-def make_data_diab(seed):
-  np.random.seed(seed)
-  diab=datasets.load_diabetes()
-  data=np.hstack((diab.data,diab.target.reshape((-1,1))))
-  np.random.shuffle(data)
-  X=data[:,:-1]
-  y=data[:,-1].reshape((-1,1))
-  X=(X-np.mean(X, 0))/np.std(X,0)
-  y=y-np.mean(y)
-  n_tot=data.shape[0]
-  n_train=round(0.8*n_tot)
-  n_val=round(0.1*n_tot)
-  n_test=round(0.1*n_tot)
-  
-  X_train=X[:n_train,:]
-  X_val=X[n_train:(n_train+n_val),:]
-  X_test=X[(n_train+n_val):,:]
-  y_train=y[:n_train]
-  y_val=y[n_train:(n_train+n_val)]
-  y_test=y[(n_train+n_val):]
-  return X_train, y_train, X_val, y_val, X_test, y_test
 
 def make_data_syn(seed, rho1, rho2, p):
   np.random.seed(seed)
@@ -107,6 +145,7 @@ def make_data_syn(seed, rho1, rho2, p):
 
 def print_log(LOG_NAME, data_mat, ALG, DATA, step_size, gamma):
   n_exps=data_mat.shape[0]
+  QUANTS=[0.5,0.25,0.75,0.1,0.9,0.05,0.95]
   if DATA=='syn':
     sens = data_mat[:,0]
     spec = data_mat[:,1]
@@ -119,13 +158,20 @@ def print_log(LOG_NAME, data_mat, ALG, DATA, step_size, gamma):
     write_log(LOG_NAME, f"Algorithm: {ALG}")
     write_log(LOG_NAME, f"Step size, gamma: {step_size:.3f} {gamma:.3f}")
     write_log(LOG_NAME, f"Experiments: {n_exps}")
-    write_log(LOG_NAME, f"Sensitivity: {np.mean(sens):.3f} {np.std(sens):.3f}")
-    write_log(LOG_NAME, f"Specificity: {np.mean(spec):.3f} {np.std(spec):.3f}")
-    write_log(LOG_NAME, f"R2: {np.mean(r2):.3f} {np.std(r2):.3f}")
-    write_log(LOG_NAME, f"Pred_err: {np.mean(pred_err):.3f} {np.std(pred_err):.3f}")
-    write_log(LOG_NAME, f"Est_err: {np.mean(est_err):.3f} {np.std(est_err):.3f}")
-    write_log(LOG_NAME, f"Time: {np.mean(time_spent):.3f} {np.std(time_spent):.3f}")
-    write_log(LOG_NAME, f"SNR: {np.mean(snr):.3f} {np.std(snr):.3f}")
+    #write_log(LOG_NAME, f"Sensitivity: {np.mean(sens):.3f} {np.std(sens):.3f}")
+    #write_log(LOG_NAME, f"Specificity: {np.mean(spec):.3f} {np.std(spec):.3f}")
+    #write_log(LOG_NAME, f"R2: {np.mean(r2):.3f} {np.std(r2):.3f}")
+    #write_log(LOG_NAME, f"Pred_err: {np.mean(pred_err):.3f} {np.std(pred_err):.3f}")
+    #write_log(LOG_NAME, f"Est_err: {np.mean(est_err):.3f} {np.std(est_err):.3f}")
+    #write_log(LOG_NAME, f"Time: {np.mean(time_spent):.3f} {np.std(time_spent):.3f}")
+    #write_log(LOG_NAME, f"SNR: {np.mean(snr):.3f} {np.std(snr):.3f}")
+    write_log(LOG_NAME, 'Sensitivity: '+' '.join([f'{np.quantile(sens,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'Specificity: '+' '.join([f'{np.quantile(spec,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'R2: '+' '.join([f'{np.quantile(r2,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'Pred_err: '+' '.join([f'{np.quantile(pred_err,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'Est_err: '+' '.join([f'{np.quantile(est_err,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'Time: '+' '.join([f'{np.quantile(time_spent,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'SNR: '+' '.join([f'{np.quantile(snr,q):.4g}' for q in QUANTS]))
     write_log(LOG_NAME, "")
   else:
     beta_size =  data_mat[:,0]
@@ -134,9 +180,9 @@ def print_log(LOG_NAME, data_mat, ALG, DATA, step_size, gamma):
     write_log(LOG_NAME, f"Algorithm: {ALG}")
     write_log(LOG_NAME, f"Step size, gamma: {step_size:.3f} {gamma:.3f}")
     write_log(LOG_NAME, f"Experiments: {n_exps}")
-    write_log(LOG_NAME, f"Beta_size: {np.mean(beta_size):.3f} {np.std(beta_size):.3f}")
-    write_log(LOG_NAME, f"r2: {np.mean(r2):.5f} {np.std(r2):.5f}")
-    write_log(LOG_NAME, f"Time: {np.mean(time_spent):.5f} {np.std(time_spent):.5f}")
+    write_log(LOG_NAME, 'Beta_size: '+' '.join([f'{np.quantile(beta_size,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'R2: '+' '.join([f'{np.quantile(r2,q):.4g}' for q in QUANTS]))
+    write_log(LOG_NAME, 'Time: '+' '.join([f'{np.quantile(time_spent,q):.4g}' for q in QUANTS]))
     write_log(LOG_NAME, "")
 
 def get_sens(beta, beta_star):
@@ -195,8 +241,8 @@ def select_alpha(best_mses, best_rs, beta_paths):
 
 
 def sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size, alphas=np.linspace(0.1,0.9,9)):
-  if ALG==0 or ALG==4 or ALG>=10:
-    gamma1 = 0 if ALG==4 else gamma
+  if ALG=='egdm' or ALG=='egd':
+    gamma1 = 0 if ALG=='egd' else gamma
     t1=time.time()
     beta_paths_eg=[]
     best_rs_eg=[]
@@ -209,7 +255,7 @@ def sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size, alphas=np
       best_mses_eg.append(best_mse_eg)
     beta, beta_path = select_alpha(best_mses_eg, best_rs_eg, beta_paths_eg)
     time_spent=time.time()-t1
-  elif ALG==1:
+  elif ALG=='en':
     t1=time.time()
     beta_paths_en=[]
     best_rs_en=[]
@@ -222,14 +268,14 @@ def sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size, alphas=np
       best_mses_en.append(best_mse_en)
     beta, beta_path = select_alpha(best_mses_en, best_rs_en, beta_paths_en)
     time_spent=time.time()-t1
-  elif ALG==2:
+  elif ALG=='cd':
     t1=time.time()
     beta_path_cd = elastic_desc(X_train, y_train, 1, 0, step_size)[0]
     best_r_cd, best_mse_cd = eval_alpha(beta_path_cd, X_val, y_val)
     beta=beta_path_cd[best_r_cd,:]
     beta_path=beta_path_cd
     time_spent=time.time()-t1
-  elif ALG==3:
+  elif ALG=='gd':
     t1=time.time()
     beta_path_gd = elastic_desc(X_train, y_train, 0, 0, step_size)[0]
     best_r_gd, best_mse_gd = eval_alpha(beta_path_gd, X_val, y_val)
@@ -243,27 +289,25 @@ def one_experiment_syn(seed, rho1, rho2, p, ALG, gamma, step_size):
   beta, beta_path, time_spent = sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size)
   return get_sens(beta, beta_star), get_spec(beta, beta_star), get_r2(y_test, X_test@beta), get_pred_err(beta, beta_star, X_test), get_est_err(beta, beta_star), time_spent, np.linalg.norm(beta_path[-1,:]), snr
 
-def one_experiment_diab(seed, ALG, gamma, step_size):
-  X_train, y_train, X_val, y_val, X_test, y_test = make_data_diab(seed)
+def one_experiment_real(seed, ALG, DATA, gamma, step_size):
+  #if seed % 1==0:
+  #  print(seed)
+  X_train, y_train, X_val, y_val, X_test, y_test = make_data_real(seed,DATA)
   beta, beta_path, time_spent = sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size)
   return get_beta_size(beta), get_r2(y_test, X_test@beta), time_spent
 
-def one_experiment_bs(seed, ALG, gamma, step_size):
-  X_train, y_train, X_val, y_val, X_test, y_test = make_data_bs(seed)
-  beta, beta_path, time_spent = sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size)
-  return get_beta_size(beta), get_r2(y_test, X_test@beta), time_spent
 
 
-
+ALG='egdm'
 DATA='syn'
+SUF=''
 rho1=0.7
 rho2=0.3
 p=50
-seed=0
-suf=""
-ALG=0
-gamma=0.01
-step_size=0.02
+
+gamma=0.5
+step_size=0.01
+N_EXPS=101
 
 for arg in range(1,len(sys.argv)):
   exec(sys.argv[arg])
@@ -275,24 +319,10 @@ pool=mp.Pool(processes=n_cpu)
 #one_experiment_bs(0,0, gamma, step_size)
 
 if DATA=='syn':
-  LOG_NAME="logs/synth_"+str(p)+"_"+str(rho1)+"_"+str(rho2)+"_"+str(ALG)+suf+".txt"
-  gamma=0.4
-  step_size=0.02
-  N_EXPS=1000
+  LOG_NAME='logs/synth_'+str(p)+'_'+str(rho1)+'_'+str(rho2)+'_'+str(ALG)+SUF+'.txt'
   data_mat = np.array(pool.starmap(one_experiment_syn, [(seed, rho1, rho2, p, ALG, gamma, step_size) for seed in range(N_EXPS)]))
-elif DATA=='diab':
-  LOG_NAME="logs/diab_"+str(ALG)+suf+".txt"
-  gamma=0.4
-  step_size=0.3
-  N_EXPS=50
-  data_mat = np.array(pool.starmap(one_experiment_diab, [(seed, ALG, gamma, step_size) for seed in range(N_EXPS)]))
-elif DATA=='bs':
-  LOG_NAME="logs/bs_"+str(ALG)+suf+".txt"
-  gamma=0.4
-  step_size=0.01
-  N_EXPS=100
-  N_EXPS=4
-  data_mat = np.array(pool.starmap(one_experiment_bs, [(seed, ALG, gamma, step_size) for seed in range(N_EXPS)]))
-
+else:
+  LOG_NAME='logs/'+DATA+'_'+str(ALG)+'.txt'
+  data_mat = np.array(pool.starmap(one_experiment_real, [(seed, ALG, DATA, gamma, step_size) for seed in range(N_EXPS)]))
 print_log(LOG_NAME, data_mat, ALG, DATA, step_size, gamma)
 

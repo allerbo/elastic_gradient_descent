@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import sys
 sys.path.insert(1,'..')
 from coordinate_desc import coord_desc
@@ -18,13 +19,14 @@ X=diab.data
 y=diab.target
 scaler = StandardScaler()
 X=scaler.fit_transform(X)
+labs=['age','sex','bmi','bp','tc','ldl','hdl','tch','ltg','glu']
 
 
 beta_path_cd, grad_path_cd= coord_desc(X,y)
 
 beta_path_ed, grad_path_ed = elastic_desc(X,y, 0.5)
 beta_path_ef, grad_path_ef, _, _= elastic_flow(X,y, 0.5)
-beta_path_en= enet_path(X, y, l1_ratio=0.5, eps=1e-5, fit_intercept=False)[1].T
+beta_path_en= enet_path(X, y, l1_ratio=0.5, eps=1e-5)[1].T
 
 beta_paths=[beta_path_cd, beta_path_ed, beta_path_en]
 grad_paths=[grad_path_cd, grad_path_ed, grad_path_ef]
@@ -74,6 +76,12 @@ for ax in axs.ravel():
   ax.tick_params(axis='y',labelsize=FS_TICK)
   ax.set_xlim((X_MIN,X_MAX))
 
+lines=[]
+for c in range(len(labs)):
+  lines.append(Line2D([0],[0],color=colors[c],lw=3))
+
+fig.legend(lines, labs, loc='lower center', ncol=5)
 
 fig.tight_layout()
+fig.subplots_adjust(bottom=.13)
 fig.savefig('figures/diab_paths_grad.pdf')

@@ -51,7 +51,7 @@ for a in range(len(ALPHAS)):
     
     beta_path_en=np.array(betas_en)
   else:
-    beta_path_en = enet_path(X, y, l1_ratio=alpha, fit_intercept=False)[1].T
+    beta_path_en = enet_path(X, y, l1_ratio=alpha)[1].T
   
   norms_eg=np.sum(np.abs(beta_path_eg),1)
   norms_en=np.sum(np.abs(beta_path_en),1)

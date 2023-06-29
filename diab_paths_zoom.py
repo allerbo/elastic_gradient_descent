@@ -22,8 +22,8 @@ labs=['age','sex','bmi','bp','tc','ldl','hdl','tch','ltg','glu']
 
 beta_path_ed3, grad_path_ed3 = elastic_desc(X,y, 0.3)
 beta_path_ed7, grad_path_ed7 = elastic_desc(X,y, 0.7)
-beta_path_en3= enet_path(X, y, l1_ratio=0.3, eps=1e-5, fit_intercept=False)[1].T
-beta_path_en7= enet_path(X, y, l1_ratio=0.7, eps=1e-5, fit_intercept=False)[1].T
+beta_path_en3= enet_path(X, y, l1_ratio=0.3, eps=1e-5)[1].T
+beta_path_en7= enet_path(X, y, l1_ratio=0.7, eps=1e-5)[1].T
 
 beta_paths_ed=[beta_path_ed3, beta_path_ed7]
 beta_paths_en=[beta_path_en3, beta_path_en7]

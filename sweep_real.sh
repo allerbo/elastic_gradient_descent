@@ -1,6 +1,8 @@
-for ALG in 0 1 2 4
+for DATA in wood house black elect energy casp super read twitter 
 do
-  echo $ALG
-  python3 run_exps.py ALG=$ALG DATA=\"diab\"
-  python3 run_exps.py ALG=$ALG DATA=\"bs\"
+  for ALG in egdm egd en cd
+  do
+    echo $DATA $ALG
+    python3 run_exps.py ALG=\"$ALG\" DATA=\"$DATA\"
+  done
 done
