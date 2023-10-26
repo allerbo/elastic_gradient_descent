@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import lasso_path
 from sklearn.linear_model import enet_path
-import sys
-sys.path.insert(1,'..')
 from gradient_desc import grad_desc
 from coordinate_desc import coord_desc
 from elastic_desc import elastic_desc

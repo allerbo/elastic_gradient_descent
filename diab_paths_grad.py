@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-import sys
-sys.path.insert(1,'..')
 from coordinate_desc import coord_desc
 from elastic_desc import elastic_desc
 from elastic_flow import elastic_flow

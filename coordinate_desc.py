@@ -1,5 +1,6 @@
+import numpy as np
+
 def coord_desc(X, y, T_MAX=None, STEP_SIZE=0.01, STOP_ACC=None):
-  import numpy as np
 
   def loop_fun(crit_choose, crit_1, crit_2):
     if crit_choose:

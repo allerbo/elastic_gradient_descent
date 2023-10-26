@@ -2,7 +2,6 @@ import numpy as np
 import sys, os, time
 from sklearn.linear_model import enet_path
 import multiprocessing as mp
-import time
 from sklearn import datasets
 import pandas as pd
 
@@ -22,7 +21,6 @@ def elastic_desc(X, y, alpha, gamma=0, step_size=0.01, max_iter=300000):
     a_grad=np.abs(grad)
     I01=(a_grad/np.max(a_grad)>=alpha)
     el_grad=I01*grad
-    #beta -= step_size*(alpha*sign.(el_grad)+(1-alpha)*el_grad)
     beta_diff=beta-beta_old
     beta_old=np.copy(beta)
     beta += gamma*beta_diff-step_size*(alpha*np.sign(el_grad)+(1-alpha)*el_grad)
@@ -158,13 +156,6 @@ def print_log(LOG_NAME, data_mat, ALG, DATA, step_size, gamma):
     write_log(LOG_NAME, f"Algorithm: {ALG}")
     write_log(LOG_NAME, f"Step size, gamma: {step_size:.3f} {gamma:.3f}")
     write_log(LOG_NAME, f"Experiments: {n_exps}")
-    #write_log(LOG_NAME, f"Sensitivity: {np.mean(sens):.3f} {np.std(sens):.3f}")
-    #write_log(LOG_NAME, f"Specificity: {np.mean(spec):.3f} {np.std(spec):.3f}")
-    #write_log(LOG_NAME, f"R2: {np.mean(r2):.3f} {np.std(r2):.3f}")
-    #write_log(LOG_NAME, f"Pred_err: {np.mean(pred_err):.3f} {np.std(pred_err):.3f}")
-    #write_log(LOG_NAME, f"Est_err: {np.mean(est_err):.3f} {np.std(est_err):.3f}")
-    #write_log(LOG_NAME, f"Time: {np.mean(time_spent):.3f} {np.std(time_spent):.3f}")
-    #write_log(LOG_NAME, f"SNR: {np.mean(snr):.3f} {np.std(snr):.3f}")
     write_log(LOG_NAME, 'Sensitivity: '+' '.join([f'{np.quantile(sens,q):.4g}' for q in QUANTS]))
     write_log(LOG_NAME, 'Specificity: '+' '.join([f'{np.quantile(spec,q):.4g}' for q in QUANTS]))
     write_log(LOG_NAME, 'R2: '+' '.join([f'{np.quantile(r2,q):.4g}' for q in QUANTS]))
@@ -290,8 +281,6 @@ def one_experiment_syn(seed, rho1, rho2, p, ALG, gamma, step_size):
   return get_sens(beta, beta_star), get_spec(beta, beta_star), get_r2(y_test, X_test@beta), get_pred_err(beta, beta_star, X_test), get_est_err(beta, beta_star), time_spent, np.linalg.norm(beta_path[-1,:]), snr
 
 def one_experiment_real(seed, ALG, DATA, gamma, step_size):
-  #if seed % 1==0:
-  #  print(seed)
   X_train, y_train, X_val, y_val, X_test, y_test = make_data_real(seed,DATA)
   beta, beta_path, time_spent = sweep_alpha(X_train, y_train, X_val, y_val, ALG, gamma, step_size)
   return get_beta_size(beta), get_r2(y_test, X_test@beta), time_spent
@@ -315,8 +304,6 @@ for arg in range(1,len(sys.argv)):
 n_cpu=mp.cpu_count()
 pool=mp.Pool(processes=n_cpu)
 
-#one_experiment_syn(0, rho1, rho2, p, ALG, gamma, step_size)
-#one_experiment_bs(0,0, gamma, step_size)
 
 if DATA=='syn':
   LOG_NAME='logs/synth_'+str(p)+'_'+str(rho1)+'_'+str(rho2)+'_'+str(ALG)+SUF+'.txt'

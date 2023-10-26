@@ -1,8 +1,4 @@
-for p in {50..200..10}
+for seed in {0..5000}
 do
-  echo $p
-  for ALG in egdm egd en cd
-  do
-    python3 run_exps.py ALG=\"$ALG\" p=$p rho1=0.7 rho2=0.3 SUF=\"_p\" $*
-  done
+  sbatch start_synth_p.sh seed=$seed $*
 done
