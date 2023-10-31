@@ -1,4 +1,4 @@
-This is the code used in the article **Elastic Gradient Descent, an Iterative Optimization Method Approximating the Solution Paths of the Elastic Net**, available at http://arxiv.org/abs/2202.02146.
+This is the code used in the article **Elastic Gradient Descent, an Iterative Optimization Method Approximating the Solution Paths of the Elastic Net**, available at http://arxiv.org/abs/2202.02146 and https://jmlr.org/papers/v24/22-0119.html.
 
 
 ## Figure 1:
